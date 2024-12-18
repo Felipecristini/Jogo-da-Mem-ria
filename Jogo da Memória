@@ -1,0 +1,73 @@
+import random
+import time
+from colorama import Fore, Style, init
+
+
+init(autoreset=True)
+
+def grade():
+    valores = list('FFKKMMSSLLEEAARR')
+    random.shuffle(valores)
+    matriz = [valores[i:i + 4] for i in range(0, len(valores), 4)]
+    return matriz
+
+def exibir(grade, visivel):
+    print("\n   0   1   2   3")
+    print("  ┌───┬───┬───┬───┐")
+    for i, linha in enumerate(grade):
+        linha_mostrada = [f"{Fore.GREEN}{valor}{Style.RESET_ALL}" if visivel[i][j] else "⬜"
+                          for j, valor in enumerate(linha)]
+        print(f"{i} │ " + " │ ".join(linha_mostrada) + " │")
+        if i < 3:
+            print("  ├───┼───┼───┼───┤")
+    print("  └───┴───┴───┴───┘")
+
+def jogo():
+    grade_jogo = grade()
+    visivel = [[False] * 4 for _ in range(4)]
+    tentativa = 0
+    inicio = time.time()
+
+    print(Fore.CYAN + "\nBem-vindo ao Jogo da Memória!")
+    print("Tente encontrar todos os pares no menor número de tentativas possível.\n")
+    print("Instruções:")
+    print("1. Escolha as posições como linha,coluna (por exemplo, 0,1).")
+    print("2. Encontre todos os pares para vencer o jogo!\n")
+
+    while not all(all(linha) for linha in visivel):
+        exibir(grade_jogo, visivel)
+        try:
+            pos1 = input(Fore.YELLOW + "Escolha a primeira posição (linha,coluna): ")
+            l1, c1 = map(int, pos1.split(","))
+            if visivel[l1][c1]:
+                print(Fore.RED + "Essa posição já foi descoberta. Tente novamente!")
+                continue
+
+            visivel[l1][c1] = True
+            exibir(grade_jogo, visivel)
+
+            pos2 = input(Fore.YELLOW + "Escolha a segunda posição (linha,coluna): ")
+            l2, c2 = map(int, pos2.split(","))
+            if visivel[l2][c2] or (l1 == l2 and c1 == c2):
+                print(Fore.RED + "Posição inválida ou já aberta. Tente novamente!")
+                visivel[l1][c1] = False
+                continue
+
+            visivel[l2][c2] = True
+            exibir(grade_jogo, visivel)
+
+            if grade_jogo[l1][c1] != grade_jogo[l2][c2]:
+                print(Fore.RED + "Não é um par! Tente novamente.")
+                visivel[l1][c1] = False
+                visivel[l2][c2] = False
+            else:
+                print(Fore.GREEN + "Par encontrado! Boa!")
+            tentativa += 1
+        except (ValueError, IndexError):
+            print(Fore.RED + "Entrada inválida! Tente novamente.")
+
+    tempo_total = time.time() - inicio
+    print(Fore.CYAN + f"\nParabéns! Você encontrou todos os pares em {tentativa} tentativas e levou {tempo_total:.2f} segundos.")
+
+
+jogo()
